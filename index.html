@@ -1,0 +1,175 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Discover stories, share ideas, and write with BlogSpace."
+    />
+    <title>BlogSpace | Stories Worth Sharing</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav container">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+
+        <button
+          class="menu-toggle"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+
+        <div class="nav-links">
+          <a class="active" href="index.html">Home</a>
+          <a href="#latest">Explore</a>
+          <a href="dashboard.html">Dashboard</a>
+        </div>
+
+        <div class="nav-actions">
+          <a href="login.html" class="btn btn-ghost">Log in</a>
+          <a href="register.html" class="btn btn-primary">Start writing ↗</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <div class="hero-copy">
+          <span class="eyebrow">✦ A HOME FOR CURIOUS MINDS</span>
+
+          <h1>Ideas are better<br />when <em>shared.</em></h1>
+
+          <p>
+            Discover fresh perspectives, explore new ideas, and share the things
+            that matter to you.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#latest" class="btn btn-primary btn-large">
+              Explore stories →
+            </a>
+            <a href="create-blog.html" class="text-link">
+              Write your first story ↗
+            </a>
+          </div>
+
+          <div class="hero-proof">
+            <div class="avatar-stack">
+              <span>J</span><span>M</span><span>A</span><span>+</span>
+            </div>
+            <div>
+              <strong>A community of storytellers</strong>
+              <small>Real ideas. Real people.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="feature-preview">
+            <img
+              src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85"
+              alt="Beautiful mountain lake"
+            />
+
+            <div class="preview-content">
+              <span class="tag">TRAVEL & LIFE</span>
+              <h3>Finding clarity in the quiet places</h3>
+              <div class="mini-author">
+                <span class="author-avatar">AM</span>
+                <span>Alex Morgan<small>6 min read</small></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-note">
+            <span>✎</span>
+            <div>
+              <strong>Your voice belongs here.</strong>
+              <small>Start a new story today.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-band">
+        <div class="container stats">
+          <div><strong>01</strong><span>Curiosity first</span></div>
+          <div><strong>02</strong><span>Ideas without limits</span></div>
+          <div><strong>03</strong><span>Stories that connect us</span></div>
+        </div>
+      </section>
+
+      <section class="section container" id="latest">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">THE READING ROOM</span>
+            <h2>Stories to spark <em>something.</em></h2>
+            <p>A little inspiration for wherever your day takes you.</p>
+          </div>
+        </div>
+
+        <div class="search-row">
+          <label class="search-box">
+            <span>⌕</span>
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="Search stories..."
+              aria-label="Search stories"
+            />
+          </label>
+
+          <div class="filter-pills">
+            <button class="filter-pill active" data-category="All">
+              All stories
+            </button>
+            <button class="filter-pill" data-category="Design">Design</button>
+            <button class="filter-pill" data-category="Lifestyle">
+              Lifestyle
+            </button>
+            <button class="filter-pill" data-category="Technology">
+              Technology
+            </button>
+            <button class="filter-pill" data-category="Travel">Travel</button>
+          </div>
+        </div>
+
+        <div class="blog-grid" id="blogGrid"></div>
+        <p id="emptyState" class="empty-state hidden">
+          No stories found. Try another search.
+        </p>
+      </section>
+
+      <section class="cta-section">
+        <div class="container cta-card">
+          <div>
+            <span class="eyebrow light">YOUR NEXT CHAPTER STARTS HERE</span>
+            <h2>Have a thought worth sharing?</h2>
+            <p>Turn your ideas into stories. Your readers are out there.</p>
+          </div>
+          <a href="create-blog.html" class="btn btn-light btn-large">
+            Create a story ↗
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+        <p>Made for ideas, stories, and everything in between.</p>
+        <span>© <span id="year"></span> BlogSpace</span>
+      </div>
+    </footer>
+  </body>
+</html>

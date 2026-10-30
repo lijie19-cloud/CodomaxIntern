@@ -1,0 +1,129 @@
+<!-- create-blog.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create a Story | BlogSpace</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav container">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+
+        <button
+          class="menu-toggle"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a class="active" href="create-blog.html">Write a story</a>
+        </div>
+
+        <div class="nav-actions">
+          <a href="dashboard.html" class="btn btn-ghost">Cancel</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container editor-main">
+      <div class="editor-heading">
+        <span class="eyebrow">THE BLANK PAGE</span>
+        <h1>Make room for an <em>idea.</em></h1>
+        <p class="muted">Write something only you can write.</p>
+      </div>
+
+      <form class="editor-card" id="createBlogForm">
+        <div id="createMessage" class="form-message" role="status"></div>
+
+        <div class="editor-topline">
+          <span class="draft-label">
+            <span class="draft-dot"></span> NEW STORY
+          </span>
+          <span class="muted" id="wordCount">0 words</span>
+        </div>
+
+        <label for="blogTitle">Story title</label>
+        <input
+          class="title-input"
+          id="blogTitle"
+          type="text"
+          placeholder="Give your story a title..."
+          maxlength="100"
+          required
+        />
+
+        <div class="editor-two-col">
+          <div>
+            <label for="blogCategory">Category</label>
+            <select id="blogCategory" required>
+              <option value="">Choose a category</option>
+              <option value="Design">Design</option>
+              <option value="Lifestyle">Lifestyle</option>
+              <option value="Technology">Technology</option>
+              <option value="Travel">Travel</option>
+              <option value="Personal Growth">Personal Growth</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="blogExcerpt">
+              Short introduction <span class="label-note">(optional)</span>
+            </label>
+            <input
+              id="blogExcerpt"
+              type="text"
+              maxlength="180"
+              placeholder="What is your story about?"
+            />
+          </div>
+        </div>
+
+        <label for="blogContent">Your story</label>
+        <textarea
+          id="blogContent"
+          rows="13"
+          placeholder="Start writing here. Let your thoughts flow..."
+          minlength="20"
+          required
+        ></textarea>
+
+        <div class="editor-footer">
+          <p class="muted">
+            ✦ A good story doesn't need to be perfect. It needs to be yours.
+          </p>
+
+          <div class="editor-actions">
+            <button class="btn btn-ghost" type="button" id="saveDraftButton">
+              Save draft
+            </button>
+
+            <button class="btn btn-primary" type="submit">
+              Publish story ↗
+            </button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+        <p>Your ideas deserve a place.</p>
+        <span>© <span id="year"></span> BlogSpace</span>
+      </div>
+    </footer>
+  </body>
+</html>

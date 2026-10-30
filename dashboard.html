@@ -1,0 +1,109 @@
+<!-- dashboard.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | BlogSpace</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav container">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+
+        <button
+          class="menu-toggle"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a class="active" href="dashboard.html">Dashboard</a>
+          <a href="create-blog.html">Write a story</a>
+        </div>
+
+        <div class="nav-actions">
+          <span class="user-chip" id="userChip">Writer</span>
+          <button class="btn btn-ghost" id="logoutButton">Log out</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container dashboard-main">
+      <section class="dashboard-welcome">
+        <div>
+          <span class="eyebrow">YOUR CREATIVE SPACE</span>
+          <h1>Good things start with a <em>draft.</em></h1>
+          <p class="muted">Manage your stories and keep your ideas moving.</p>
+        </div>
+
+        <a href="create-blog.html" class="btn btn-primary btn-large">
+          + New story
+        </a>
+      </section>
+
+      <section class="dashboard-stats">
+        <article class="dash-stat">
+          <span class="stat-icon">✎</span>
+          <span class="muted">Total stories</span>
+          <strong id="totalPosts">0</strong>
+          <small>Stories you've created</small>
+        </article>
+
+        <article class="dash-stat">
+          <span class="stat-icon violet">◉</span>
+          <span class="muted">Published</span>
+          <strong id="publishedPosts">0</strong>
+          <small>Visible to everyone</small>
+        </article>
+
+        <article class="dash-stat">
+          <span class="stat-icon amber">▤</span>
+          <span class="muted">Drafts</span>
+          <strong id="draftPosts">0</strong>
+          <small>Work in progress</small>
+        </article>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Your stories</h2>
+            <p class="muted">Everything you've written in one place.</p>
+          </div>
+          <a href="index.html" class="text-link">View public site ↗</a>
+        </div>
+
+        <div id="dashboardPosts" class="dashboard-post-list"></div>
+
+        <div id="dashboardEmpty" class="empty-dashboard hidden">
+          <div class="empty-icon">✎</div>
+          <h3>Your story starts here</h3>
+          <p class="muted">
+            You haven't written anything yet. Make that first idea count.
+          </p>
+          <a href="create-blog.html" class="btn btn-primary">
+            Write your first story
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+        <p>Keep creating. Keep sharing.</p>
+        <span>© <span id="year"></span> BlogSpace</span>
+      </div>
+    </footer>
+  </body>
+</html>

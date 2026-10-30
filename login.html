@@ -1,0 +1,83 @@
+<!-- login.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | BlogSpace</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body class="auth-body">
+    <header class="site-header">
+      <nav class="nav container">
+        <a href="index.html" class="brand">
+          <span class="brand-mark">B</span> BlogSpace
+        </a>
+        <a href="index.html" class="text-link">← Back to home</a>
+      </nav>
+    </header>
+
+    <main class="auth-layout">
+      <section class="auth-side">
+        <div class="auth-side-inner">
+          <span class="eyebrow light">WELCOME BACK</span>
+
+          <h1>Your next great idea is <em>waiting.</em></h1>
+
+          <p>
+            Pick up where you left off. Your stories and your community are
+            right here.
+          </p>
+
+          <div class="quote-card">
+            <span>“</span>
+            <p>Writing is thinking. To write well is to think clearly.</p>
+            <small>— DAVID MCCULLOUGH</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-main">
+        <form class="auth-form" id="loginForm">
+          <span class="eyebrow">YOUR SPACE IS READY</span>
+
+          <h2>Welcome back</h2>
+          <p class="muted">Log in to continue your writing journey.</p>
+
+          <div id="loginMessage" class="form-message" role="status"></div>
+
+          <label for="loginEmail">Email address</label>
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
+
+          <label for="loginPassword">Password</label>
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            minlength="6"
+            required
+          />
+
+          <button type="submit" class="btn btn-primary btn-full btn-large">
+            Log in →
+          </button>
+
+          <p class="auth-switch">
+            New to BlogSpace?
+            <a href="register.html">Create an account</a>
+          </p>
+
+          <p class="demo-hint">Demo: Register an account before logging in.</p>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
