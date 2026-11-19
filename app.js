@@ -8,6 +8,13 @@ const imageByCategory = {
   "Personal Growth": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
   Other: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
 };
+const sampleStories = [
+  { id: "sample-1", title: "The Art of Slowing Down", category: "Lifestyle", excerpt: "Finding small moments of calm in a world that never stops moving.", content: "Sometimes the best way to move forward is to pause. A slower morning, a walk without a destination, or a few minutes with a book can help us notice what matters.", author: "Maya Johnson", date: "2026-10-18", status: "published", image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=80" },
+  { id: "sample-2", title: "Designing for People, Not Pixels", category: "Design", excerpt: "Good design starts with empathy, curiosity, and a willingness to listen.", content: "The most memorable designs are not just beautiful. They make a task clearer, a moment easier, or a person feel understood.", author: "Daniel Kim", date: "2026-10-15", status: "published", image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80" },
+  { id: "sample-3", title: "Small Habits, Meaningful Change", category: "Personal Growth", excerpt: "Big transformations often begin with tiny promises we keep to ourselves.", content: "A habit does not have to be dramatic to matter. Five minutes of reading, a short walk, or writing one paragraph can become the foundation for something bigger.", author: "Sara Ali", date: "2026-10-12", status: "published", image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80" },
+  { id: "sample-4", title: "What Learning to Code Taught Me", category: "Technology", excerpt: "Beyond syntax and screens, programming taught me how to approach problems.", content: "Learning to code is a practice in patience. Every bug is a question, every fix a lesson, and every small project a reason to keep going.", author: "Noah Williams", date: "2026-10-09", status: "published", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80" },
+  { id: "sample-5", title: "A Weekend Away from the Noise", category: "Travel", excerpt: "Sometimes a change of scenery is all it takes to see things differently.", content: "A new place invites us to look again. You notice the light, the sounds, the people, and the little details that routine can make invisible.", author: "Alex Morgan", date: "2026-10-06", status: "published", image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80" },
+];
 
 function getUser() {
   try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch { return null; }
@@ -54,11 +61,20 @@ async function renderHome() {
   const grid = document.getElementById("blogGrid");
   if (!grid) return;
   const search = document.getElementById("searchInput");
+  const loadNotice = document.getElementById("postsNotice");
   const filters = [...document.querySelectorAll(".filter-pill")];
   let category = "All";
   let posts = [];
-  try { posts = await api("/api/posts"); }
-  catch (error) { grid.innerHTML = `<p class="form-message error">${escapeHTML(error.message)} Start the server with <code>npm start</code>.</p>`; return; }
+  try {
+    posts = await api("/api/posts");
+    if (loadNotice) loadNotice.className = "form-message hidden";
+  } catch (error) {
+    posts = sampleStories;
+    if (loadNotice) {
+      loadNotice.textContent = `Showing sample stories. ${error.message} Your saved posts will appear when Supabase is available.`;
+      loadNotice.className = "form-message error";
+    }
+  }
   function display() {
     const query = (search?.value || "").trim().toLowerCase();
     const filtered = posts.filter(post => (category === "All" || post.category === category) && [post.title, post.category, post.excerpt, post.author].join(" ").toLowerCase().includes(query));
@@ -129,11 +145,21 @@ async function renderStory() {
   if (!container) return;
   const postId = new URLSearchParams(window.location.search).get("id");
   if (!postId) { container.innerHTML = '<p class="form-message error">Story not found.</p>'; return; }
-  try {
-    const post = await api(`/api/posts/${encodeURIComponent(postId)}`);
+  function display(post) {
     document.title = `${post.title} | BlogSpace`;
     container.innerHTML = `<article class="story-article"><img class="story-cover" src="${escapeHTML(getImage(post))}" alt=""><div class="story-copy"><a class="text-link story-back" href="index.html#latest">← All stories</a><span class="card-category story-category">${escapeHTML(post.category.toUpperCase())}</span><h1>${escapeHTML(post.title)}</h1><div class="story-byline">By <strong>${escapeHTML(post.author)}</strong><span aria-hidden="true">·</span><time datetime="${escapeHTML(post.date)}">${formatDate(post.date)}</time></div>${post.excerpt ? `<p class="story-excerpt">${escapeHTML(post.excerpt)}</p>` : ""}<div class="story-content">${escapeHTML(post.content).replace(/\n/g, "<br>")}</div></div></article>`;
-  } catch (error) { container.innerHTML = `<p class="form-message error">${escapeHTML(error.message)} <a href="index.html#latest">Return to stories</a></p>`; }
+  }
+  try {
+    display(await api(`/api/posts/${encodeURIComponent(postId)}`));
+  } catch (error) {
+    const sample = sampleStories.find(post => post.id === postId);
+    if (sample) {
+      display(sample);
+      container.insertAdjacentHTML("afterbegin", `<p class="form-message error">Showing sample story. ${escapeHTML(error.message)}</p>`);
+    } else {
+      container.innerHTML = `<p class="form-message error">${escapeHTML(error.message)} <a href="index.html#latest">Return to stories</a></p>`;
+    }
+  }
 }
 
 function setupEditor() {

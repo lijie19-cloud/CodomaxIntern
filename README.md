@@ -1,46 +1,26 @@
-# BlogSpace — Responsive Blog Application
+# BlogSpace
 
-A responsive blogging application with an Express.js REST API and a static HTML/CSS/JavaScript frontend.
+A responsive blogging app with an Express.js API, a static HTML/CSS/JavaScript frontend, and Supabase Postgres storage.
 
-## Technologies
+## Setup
 
-- HTML5
-- CSS3
-- JavaScript
-- Node.js and Express.js
-- JSON file persistence (`data/db.json`)
-- bcrypt password hashing and JWT authentication
+1. Create a Supabase project.
+2. In the Supabase SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql). It creates or upgrades the posts table (including missing columns), enables row-level security, denies direct browser table access, and inserts five example stories. If the posts table exists but is empty, the API also seeds the stories on first load.
+3. Install Node.js 18 or newer and run `npm install` in this folder.
+4. Copy `.env.example` to `.env`. Fill in `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` from the Supabase project API settings, and set a private random `JWT_SECRET`.
+5. Run `npm start` and open `http://localhost:3000`.
+
+For development with automatic server restarts, run `npm run dev`.
+
+Keep the Supabase secret key and JWT secret on the server. Never add them to frontend JavaScript or commit `.env`. Supabase Auth manages account passwords; the app no longer depends on a custom `blog_users` table. Supabase secret keys bypass RLS, so the API verifies JWTs and scopes private post listing/deletion to the authenticated author. See [Supabase user creation](https://supabase.com/docs/reference/javascript/auth-admin-createuser) and [Supabase API key guidance](https://supabase.com/docs/guides/getting-started/api-keys).
 
 ## Pages
 
-1. Home
-2. Login
-3. Register
-4. Dashboard
-5. Create Blog
-
-## Features
-
-- Responsive design
-- User registration and login through the backend API
-- Form validation
-- Blog creation and publishing
-- Save drafts
-- Search blog posts
-- Filter by category
-- Dashboard statistics
-- Delete blog posts
-- Server-side blog persistence; LocalStorage stores only the login token and current user
-
-## Installation
-
-1. Install Node.js 18 or newer.
-2. Run `npm install` in this folder.
-3. Set a private `JWT_SECRET` environment variable before starting the server.
-4. Run `npm start` and open `http://localhost:3000`.
-5. Register an account and start writing blogs.
-
-For development with automatic server restarts, run `npm run dev`.
+- Home: search and filter published posts loaded from Supabase.
+- Login and Register: backend authentication.
+- Dashboard: view and delete your own posts.
+- Create Blog: publish a post or save a draft.
+- Story detail: click a story card to read a full published story.
 
 ## REST API
 
@@ -53,22 +33,10 @@ For development with automatic server restarts, run `npm run dev`.
 | `GET` | `/api/posts/mine` | Token required | List the signed-in author's posts |
 | `POST` | `/api/posts` | Token required | Create a published post or draft |
 | `DELETE` | `/api/posts/:id` | Token required | Delete your own post |
-| `GET` | `/api/health` | Public | Check that the API is running |
+| `GET` | `/api/health` | Public | Check the Supabase connection |
 
-Send protected requests with `Authorization: Bearer <token>`. Request and response bodies use JSON.
+Protected requests use `Authorization: Bearer <token>`. Requests and responses use JSON.
 
-## Project Structure
+## Environment
 
-blogspace_app/
-├── index.html
-├── login.html
-├── register.html
-├── dashboard.html
-├── create-blog.html
-├── styles.css
-├── app.js
-└── README.md
-
-## Configuration and storage
-
-The server listens on port `3000` by default; set `PORT` to change it. Set `JWT_SECRET` to a long random value for each deployment. The fallback secret exists only to make local learning easier and must not be used in a deployed environment. Passwords are hashed with bcrypt. Users and posts are stored in `data/db.json`; this simple file store is for learning and single-process local use, and can be replaced by a database for production.
+See `.env.example`. `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` are required. `PORT` defaults to `3000`. For production, always set a unique, long `JWT_SECRET`.

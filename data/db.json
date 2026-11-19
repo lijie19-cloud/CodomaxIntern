@@ -1,0 +1,93 @@
+{
+  "users": [
+    {
+      "id": "108dfe66-4b83-4981-a00a-7832b794aea9",
+      "name": "Lijalem M",
+      "email": "lijie@gmail.com",
+      "passwordHash": "$2a$12$yenQdS1OAFWDHD0.TzEbw.P7sA.5lCz62.WSoPSLT3Y5rdrZbgWcm"
+    }
+  ],
+  "posts": [
+    {
+      "id": "cefc9832-dcb3-460b-ba7a-9f24a6b89e24",
+      "title": "From Dreams to Reality",
+      "category": "Personal Growth",
+      "excerpt": "Personal Growth",
+      "content": "Everyone has a dream, but turning that dream into reality requires patience, courage, and hard work. My personal growth journey has taught me that success does not happen overnight. It is built through small steps, consistent effort, and the willingness to learn from mistakes.\n\nThere was a time when I doubted my abilities and felt uncertain about my future. I had big dreams, but I didn't always know where to start. Sometimes, I faced challenges, made mistakes, and felt discouraged. However, I gradually understood that failure is not the opposite of success; it is part of the journey.\n\nI decided to invest more time in myself by learning new skills, improving my knowledge, and developing a positive mindset. I started exploring technology, learning web development, and practicing programming. Every new concept I understood gave me more confidence. Even when something seemed difficult, I reminded myself that every expert was once a beginner.\n\nAlong the way, I learned three important lessons:\n\n1. Consistency is more powerful than motivation. Small efforts every day can create big results over time.\n2. Failure is an opportunity to grow. Every mistake teaches something valuable.\n3. Believe in yourself. Other people may doubt your abilities, but you should never stop believing in your potential.\n\nToday, I understand that personal growth is not about competing with others. It is about becoming better than the person I was yesterday. I still have many things to learn, challenges to overcome, and goals to achieve.\n\nMy journey is not finished. I am still learning, improving, and building the future I dream of.\n\nMy greatest lesson: Don't be afraid to start small. Be afraid of never starting at all. Your future is shaped by the decisions and actions you take today.",
+      "author": "Lijalem M",
+      "authorEmail": "lijie@gmail.com",
+      "authorId": "108dfe66-4b83-4981-a00a-7832b794aea9",
+      "date": "2026-11-10",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "9f41d669-691c-4f02-a4e8-d932f3dac798",
+      "title": "From Dreams to Reality",
+      "category": "Personal Growth",
+      "excerpt": "Personal Growth",
+      "content": "Everyone has a dream, but turning that dream into reality requires patience, courage, and hard work. My personal growth journey has taught me that success does not happen overnight. It is built through small steps, consistent effort, and the willingness to learn from mistakes.\n\nThere was a time when I doubted my abilities and felt uncertain about my future. I had big dreams, but I didn't always know where to start. Sometimes, I faced challenges, made mistakes, and felt discouraged. However, I gradually understood that failure is not the opposite of success; it is part of the journey.\n\nI decided to invest more time in myself by learning new skills, improving my knowledge, and developing a positive mindset. I started exploring technology, learning web development, and practicing programming. Every new concept I understood gave me more confidence. Even when something seemed difficult, I reminded myself that every expert was once a beginner.\n\nAlong the way, I learned three important lessons:\n\n1. Consistency is more powerful than motivation. Small efforts every day can create big results over time.\n2. Failure is an opportunity to grow. Every mistake teaches something valuable.\n3. Believe in yourself. Other people may doubt your abilities, but you should never stop believing in your potential.\n\nToday, I understand that personal growth is not about competing with others. It is about becoming better than the person I was yesterday. I still have many things to learn, challenges to overcome, and goals to achieve.\n\nMy journey is not finished. I am still learning, improving, and building the future I dream of.\n\nMy greatest lesson: Don't be afraid to start small. Be afraid of never starting at all. Your future is shaped by the decisions and actions you take today.",
+      "author": "Lijalem M",
+      "authorEmail": "lijie@gmail.com",
+      "authorId": "108dfe66-4b83-4981-a00a-7832b794aea9",
+      "date": "2026-11-10",
+      "status": "draft",
+      "image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "sample-1",
+      "title": "The Art of Slowing Down",
+      "category": "Lifestyle",
+      "excerpt": "Finding small moments of calm in a world that never stops moving.",
+      "content": "Sometimes the best way to move forward is to pause. A slower morning, a walk without a destination, or a few minutes with a book can help us notice what matters.",
+      "author": "Maya Johnson",
+      "date": "2026-10-18",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "sample-2",
+      "title": "Designing for People, Not Pixels",
+      "category": "Design",
+      "excerpt": "Good design starts with empathy, curiosity, and a willingness to listen.",
+      "content": "The most memorable designs are not just beautiful. They make a task clearer, a moment easier, or a person feel understood.",
+      "author": "Daniel Kim",
+      "date": "2026-10-15",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "sample-3",
+      "title": "Small Habits, Meaningful Change",
+      "category": "Personal Growth",
+      "excerpt": "Big transformations often begin with tiny promises we keep to ourselves.",
+      "content": "A habit does not have to be dramatic to matter. Five minutes of reading, a short walk, or writing one paragraph can become the foundation for something bigger.",
+      "author": "Sara Ali",
+      "date": "2026-10-12",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "sample-4",
+      "title": "What Learning to Code Taught Me",
+      "category": "Technology",
+      "excerpt": "Beyond syntax and screens, programming taught me how to approach problems.",
+      "content": "Learning to code is a practice in patience. Every bug is a question, every fix a lesson, and every small project a reason to keep going.",
+      "author": "Noah Williams",
+      "date": "2026-10-09",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "sample-5",
+      "title": "A Weekend Away from the Noise",
+      "category": "Travel",
+      "excerpt": "Sometimes a change of scenery is all it takes to see things differently.",
+      "content": "A new place invites us to look again. You notice the light, the sounds, the people, and the little details that routine can make invisible.",
+      "author": "Alex Morgan",
+      "date": "2026-10-06",
+      "status": "published",
+      "image": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80"
+    }
+  ]
+}
