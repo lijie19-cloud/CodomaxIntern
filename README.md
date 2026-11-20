@@ -10,7 +10,7 @@ A responsive blogging app with an Express.js API, a static HTML/CSS/JavaScript f
 4. Copy `.env.example` to `.env`. Fill in `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` from the Supabase project API settings, and set a private random `JWT_SECRET`.
 5. Run `npm start` and open `http://localhost:3000`.
 
-For development with automatic server restarts, run `npm run dev`.
+For development with automatic server restarts, run `npm run dev`. After changing API routes while using `npm start`, stop the existing server with Ctrl+C and start it again so the new routes load.
 
 Keep the Supabase secret key and JWT secret on the server. Never add them to frontend JavaScript or commit `.env`. Supabase Auth manages account passwords; the app no longer depends on a custom `blog_users` table. Supabase secret keys bypass RLS, so the API verifies JWTs and scopes private post listing/deletion to the authenticated author. See [Supabase user creation](https://supabase.com/docs/reference/javascript/auth-admin-createuser) and [Supabase API key guidance](https://supabase.com/docs/guides/getting-started/api-keys).
 
@@ -24,16 +24,17 @@ Keep the Supabase secret key and JWT secret on the server. Never add them to fro
 
 ## REST API
 
-| Method | Endpoint | Access | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/api/auth/register` | Public | Create an account and return a token |
-| `POST` | `/api/auth/login` | Public | Sign in and return a token |
-| `GET` | `/api/posts` | Public | List published posts |
-| `GET` | `/api/posts/:id` | Public | Read one published post |
-| `GET` | `/api/posts/mine` | Token required | List the signed-in author's posts |
-| `POST` | `/api/posts` | Token required | Create a published post or draft |
-| `DELETE` | `/api/posts/:id` | Token required | Delete your own post |
-| `GET` | `/api/health` | Public | Check the Supabase connection |
+| Method   | Endpoint             | Access         | Purpose                              |
+| -------- | -------------------- | -------------- | ------------------------------------ |
+| `POST`   | `/api/auth/register` | Public         | Create an account and return a token |
+| `POST`   | `/api/auth/login`    | Public         | Sign in and return a token           |
+| `GET`    | `/api/posts`         | Public         | List published posts                 |
+| `GET`    | `/api/posts/:id`     | Public         | Read one published post              |
+| `GET`    | `/api/posts/mine`    | Token required | List the signed-in author's posts    |
+| `POST`   | `/api/posts`         | Token required | Create a published post or draft     |
+| `PUT`    | `/api/posts/:id`     | Token required | Update your own post or draft        |
+| `DELETE` | `/api/posts/:id`     | Token required | Delete your own post                 |
+| `GET`    | `/api/health`        | Public         | Check the Supabase connection        |
 
 Protected requests use `Authorization: Bearer <token>`. Requests and responses use JSON.
 

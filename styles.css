@@ -630,7 +630,9 @@ h2 em {
   font-size: 13px;
 }
 
-.story-byline strong { color: var(--ink); }
+.story-byline strong {
+  color: var(--ink);
+}
 
 .story-excerpt {
   margin: 30px 0;
@@ -1114,6 +1116,24 @@ h2 em {
 .status-badge.draft {
   background: #f6ecdd;
   color: #9b713c;
+}
+
+.post-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post-edit {
+  padding: 6px 8px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.post-edit:hover {
+  text-decoration: underline;
 }
 
 .post-delete {
@@ -1603,6 +1623,15 @@ h2 em {
 
   .post-delete {
     padding: 3px;
+  }
+
+  .post-controls {
+    gap: 2px;
+  }
+
+  .post-edit {
+    padding: 4px;
+    font-size: 10px;
   }
 
   /* Editor */
