@@ -2,7 +2,7 @@
 
 **A place to read, write, and share stories.** BlogSpace is a full stack blogging application with a responsive web interface, an Express REST API, Supabase Auth, and Supabase Postgres. Readers can discover stories, while writers can publish and manage posts, connect with readers, and build a profile.
 
-**Live application:** `https://<your-deployed-app-url>`
+**Live application:** [`here`](https://blog-space-orcin.vercel.app/)
 
 _Replace this placeholder with your deployment URL when the app is live._
 
