@@ -247,6 +247,16 @@ app.post(
   }),
 );
 
+app.get("/api/auth/me", auth, (req, res) => {
+  res.json({
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+    },
+  });
+});
+
 app.get(
   "/api/posts",
   asyncRoute(async (_req, res) => {

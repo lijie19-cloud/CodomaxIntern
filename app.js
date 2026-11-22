@@ -94,6 +94,17 @@ function getUser() {
     return null;
   }
 }
+function getInitials(name = "") {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0] || "")
+      .join("")
+      .toUpperCase() || "W"
+  );
+}
 function setMessage(id, message, type = "error") {
   const element = document.getElementById(id);
   if (!element) return;
@@ -160,6 +171,10 @@ function saveSession(session) {
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+}
+function logout() {
+  clearSession();
+  window.location.replace("index.html");
 }
 
 async function renderHome() {
@@ -271,22 +286,55 @@ function renderAuth() {
         setMessage("loginMessage", error.message);
       }
     });
-  document.getElementById("logoutButton")?.addEventListener("click", () => {
-    clearSession();
-    window.location.href = "index.html";
-  });
+  document.getElementById("logoutButton")?.addEventListener("click", logout);
+  document.getElementById("homeLogoutButton")?.addEventListener("click", logout);
+}
+
+function setupHomeAuthNavigation() {
+  const loginLink = document.getElementById("homeLoginLink");
+  if (!loginLink) return;
+  const registerLink = document.getElementById("homeRegisterLink");
+  const profileLink = document.getElementById("homeProfileLink");
+  const logoutButton = document.getElementById("homeLogoutButton");
+
+  function displayUser(user) {
+    const signedIn = Boolean(user && localStorage.getItem(TOKEN_KEY));
+    loginLink.classList.toggle("hidden", signedIn);
+    registerLink.classList.toggle("hidden", signedIn);
+    profileLink.classList.toggle("hidden", !signedIn);
+    logoutButton.classList.toggle("hidden", !signedIn);
+    if (signedIn) profileLink.textContent = `Hi, ${user.name}`;
+  }
+
+  const cachedUser = getUser();
+  displayUser(cachedUser);
+  if (!localStorage.getItem(TOKEN_KEY)) return;
+
+  api("/api/auth/me")
+    .then(({ user }) => {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      displayUser(user);
+    })
+    .catch(() => displayUser(getUser()));
 }
 
 async function renderDashboard() {
   const list = document.getElementById("dashboardPosts");
   if (!list) return;
-  const user = getUser();
-  if (!user || !localStorage.getItem(TOKEN_KEY)) {
+  if (!localStorage.getItem(TOKEN_KEY)) {
     window.location.href = "login.html";
     return;
   }
-  document.getElementById("userChip").textContent = user.name;
   try {
+    const { user } = await api("/api/auth/me");
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    document.getElementById("userChip").textContent = user.name;
+    document.getElementById("profileName").textContent = user.name;
+    document.getElementById("profileEmail").textContent = user.email;
+    document.getElementById("profileInitials").textContent = getInitials(
+      user.name,
+    );
+
     const posts = await api("/api/posts/mine");
     const published = posts.filter(
       (post) => post.status === "published",
@@ -318,6 +366,10 @@ async function renderDashboard() {
       }),
     );
   } catch (error) {
+    if (!localStorage.getItem(TOKEN_KEY)) {
+      window.location.href = "login.html";
+      return;
+    }
     setMessage("dashboardMessage", error.message);
   }
 }
@@ -462,12 +514,23 @@ function setupEditor() {
 function setupMobileNavigation() {
   document.querySelectorAll(".menu-toggle").forEach((button) =>
     button.addEventListener("click", () => {
-      const links = document.querySelector(".nav-links");
-      if (links)
+      const menu = button.getAttribute("aria-controls")
+        ? document.getElementById(button.getAttribute("aria-controls"))
+        : button.closest(".nav")?.querySelector(".nav-links");
+      if (menu) {
         button.setAttribute(
           "aria-expanded",
-          String(links.classList.toggle("open")),
+          String(menu.classList.toggle("open")),
         );
+      }
+    }),
+  );
+  document.querySelectorAll(".home-nav-menu a").forEach((link) =>
+    link.addEventListener("click", () => {
+      const menu = document.getElementById("homeNavMenu");
+      const button = document.querySelector('[aria-controls="homeNavMenu"]');
+      menu?.classList.remove("open");
+      button?.setAttribute("aria-expanded", "false");
     }),
   );
 }
@@ -477,6 +540,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (year) year.textContent = new Date().getFullYear();
   setupMobileNavigation();
   renderAuth();
+  setupHomeAuthNavigation();
   setupEditor();
   await Promise.all([renderHome(), renderDashboard(), renderStory()]);
+});
+
+window.addEventListener("pageshow", () => {
+  if (document.getElementById("homeLoginLink")) {
+    setupHomeAuthNavigation();
+  }
+  if (
+    document.getElementById("dashboardPosts") &&
+    !localStorage.getItem(TOKEN_KEY)
+  ) {
+    window.location.replace("login.html");
+  }
 });

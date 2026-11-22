@@ -28,6 +28,7 @@ Keep the Supabase secret key and JWT secret on the server. Never add them to fro
 | -------- | -------------------- | -------------- | ------------------------------------ |
 | `POST`   | `/api/auth/register` | Public         | Create an account and return a token |
 | `POST`   | `/api/auth/login`    | Public         | Sign in and return a token           |
+| `GET`    | `/api/auth/me`       | Token required | Validate the session and return the profile |
 | `GET`    | `/api/posts`         | Public         | List published posts                 |
 | `GET`    | `/api/posts/:id`     | Public         | Read one published post              |
 | `GET`    | `/api/posts/mine`    | Token required | List the signed-in author's posts    |
@@ -36,7 +37,7 @@ Keep the Supabase secret key and JWT secret on the server. Never add them to fro
 | `DELETE` | `/api/posts/:id`     | Token required | Delete your own post                 |
 | `GET`    | `/api/health`        | Public         | Check the Supabase connection        |
 
-Protected requests use `Authorization: Bearer <token>`. Requests and responses use JSON.
+Protected requests use `Authorization: Bearer <token>`. The dashboard validates the token with `/api/auth/me` before displaying the profile and loading that user's posts. Logout clears the stored token and profile. Requests and responses use JSON.
 
 ## Environment
 

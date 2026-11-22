@@ -127,6 +127,26 @@ img {
   gap: 10px;
 }
 
+.home-nav-menu {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-width: 0;
+}
+
+.home-nav-menu .nav-actions {
+  flex: 0 0 auto;
+}
+
+.home-nav-menu #homeProfileLink {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-toggle {
   display: none;
   border: 0;
@@ -969,6 +989,42 @@ h2 em {
   margin-bottom: 32px;
 }
 
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: -8px 0 30px;
+  padding: 18px 22px;
+  border: 1px solid #efeee8;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.profile-avatar {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--green);
+  font-family: var(--serif);
+  font-size: 21px;
+}
+
+.profile-details h2 {
+  margin: 3px 0;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.profile-details p {
+  margin: 0;
+  font-size: 12px;
+}
+
 .dashboard-welcome h1,
 .editor-heading h1 {
   margin: 10px 0;
@@ -1381,6 +1437,57 @@ h2 em {
   .nav-actions .btn {
     padding: 9px 10px;
     font-size: 11px;
+  }
+
+  .home-nav-menu {
+    display: none;
+    position: absolute;
+    top: 69px;
+    left: 16px;
+    right: 16px;
+    z-index: 20;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px 18px 18px;
+    border: 1px solid var(--line);
+    border-radius: 0 0 10px 10px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+  }
+
+  .home-nav-menu.open {
+    display: flex;
+  }
+
+  .home-nav-menu .nav-links {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .home-nav-menu .nav-links a {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .home-nav-menu .nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+  }
+
+  .home-nav-menu .nav-actions .btn {
+    flex: 1 1 120px;
+    padding: 10px 12px;
+    font-size: 12px;
   }
 
   .hero {

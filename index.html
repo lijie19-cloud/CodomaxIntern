@@ -23,19 +23,24 @@
           class="menu-toggle"
           aria-label="Toggle navigation"
           aria-expanded="false"
+          aria-controls="homeNavMenu"
         >
           ☰
         </button>
 
-        <div class="nav-links">
-          <a class="active" href="index.html">Home</a>
-          <a href="#latest">Explore</a>
-          <a href="dashboard.html">Dashboard</a>
-        </div>
+        <div class="home-nav-menu" id="homeNavMenu">
+          <div class="nav-links">
+            <a class="active" href="index.html">Home</a>
+            <a href="#latest">Explore</a>
+            <a href="dashboard.html">Dashboard</a>
+          </div>
 
-        <div class="nav-actions">
-          <a href="login.html" class="btn btn-ghost">Log in</a>
-          <a href="register.html" class="btn btn-primary">Start writing ↗</a>
+          <div class="nav-actions">
+            <a href="login.html" class="btn btn-ghost" id="homeLoginLink">Log in</a>
+            <a href="register.html" class="btn btn-primary" id="homeRegisterLink">Start writing ↗</a>
+            <a href="dashboard.html#profileCard" class="btn btn-ghost hidden" id="homeProfileLink">My profile</a>
+            <button class="btn btn-primary hidden" id="homeLogoutButton" type="button">Log out</button>
+          </div>
         </div>
       </nav>
     </header>
