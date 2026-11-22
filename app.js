@@ -1,5 +1,6 @@
 const TOKEN_KEY = "blogspace_token_v1";
 const USER_KEY = "blogspace_user_v1";
+const POSTS_CACHE_KEY = "blogspace_posts_cache_v1";
 const imageByCategory = {
   Design:
     "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80",
@@ -158,11 +159,34 @@ async function api(url, options = {}) {
       localStorage.removeItem(USER_KEY);
     }
     if (response.status === 404 && body.error === "API route not found.") {
-      throw new Error("The server is running an older API version. Stop it and restart with npm start to enable editing.");
+      throw new Error(
+        "The server is running an older API version. Stop it and restart with npm start to enable editing.",
+      );
     }
     throw new Error(body.error || "Request failed. Please try again.");
   }
   return body;
+}
+function fileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () =>
+      reject(new Error("The selected image could not be read."));
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadImage(file, purpose) {
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  if (!allowed.includes(file.type))
+    throw new Error("Choose a JPEG, PNG, WebP, or GIF image.");
+  if (file.size > 5 * 1024 * 1024)
+    throw new Error("Images must be 5 MB or smaller.");
+  const dataUrl = await fileAsDataUrl(file);
+  return api("/api/uploads", {
+    method: "POST",
+    body: JSON.stringify({ dataUrl, purpose }),
+  });
 }
 function saveSession(session) {
   localStorage.setItem(TOKEN_KEY, session.token);
@@ -187,6 +211,7 @@ async function renderHome() {
   let posts = [];
   try {
     posts = await api("/api/posts");
+    sessionStorage.setItem(POSTS_CACHE_KEY, JSON.stringify(posts));
     if (loadNotice) loadNotice.className = "form-message hidden";
   } catch (error) {
     posts = sampleStories;
@@ -208,7 +233,7 @@ async function renderHome() {
     grid.innerHTML = filtered
       .map(
         (post) =>
-          `<a class="blog-card" href="story.html?id=${encodeURIComponent(post.id)}" aria-label="Read ${escapeHTML(post.title)}"><div class="blog-card-image"><img src="${escapeHTML(getImage(post))}" alt="" loading="lazy"><span class="card-category">${escapeHTML(post.category.toUpperCase())}</span></div><div class="blog-card-body"><span class="eyebrow">${formatDate(post.date)}</span><h3>${escapeHTML(post.title)}</h3><p>${escapeHTML(post.excerpt || `${post.content.slice(0, 115)}...`)}</p><div class="card-meta"><span>By <strong>${escapeHTML(post.author)}</strong></span><span class="card-read" aria-hidden="true">↗</span></div></div></a>`,
+          `<a class="blog-card" href="story.html?id=${encodeURIComponent(post.id)}" aria-label="Read ${escapeHTML(post.title)}"><div class="blog-card-image"><img src="${escapeHTML(getImage(post))}" alt="" loading="lazy"><span class="card-category">${escapeHTML(post.category.toUpperCase())}</span></div><div class="blog-card-body"><span class="eyebrow">${formatDate(post.date)}</span><h3>${escapeHTML(post.title)}</h3><p>${escapeHTML(post.excerpt || `${post.content.slice(0, 115)}...`)}</p><div class="card-meta"><span class="card-author">${post.authorImage ? `<img src="${escapeHTML(post.authorImage)}" alt="">` : `<span class="card-author-initials">${escapeHTML(getInitials(post.author))}</span>`}By <strong>${escapeHTML(post.author)}</strong></span><span class="card-read" aria-hidden="true">↗</span></div></div></a>`,
       )
       .join("");
     document
@@ -287,7 +312,9 @@ function renderAuth() {
       }
     });
   document.getElementById("logoutButton")?.addEventListener("click", logout);
-  document.getElementById("homeLogoutButton")?.addEventListener("click", logout);
+  document
+    .getElementById("homeLogoutButton")
+    ?.addEventListener("click", logout);
 }
 
 function setupHomeAuthNavigation() {
@@ -331,9 +358,36 @@ async function renderDashboard() {
     document.getElementById("userChip").textContent = user.name;
     document.getElementById("profileName").textContent = user.name;
     document.getElementById("profileEmail").textContent = user.email;
-    document.getElementById("profileInitials").textContent = getInitials(
-      user.name,
-    );
+    const profileAvatar = document.getElementById("profileInitials");
+    profileAvatar.innerHTML = user.profileImage
+      ? `<img src="${escapeHTML(user.profileImage)}" alt="${escapeHTML(user.name)} profile photo">`
+      : escapeHTML(getInitials(user.name));
+
+    const profileImageInput = document.getElementById("profileImageInput");
+    if (profileImageInput)
+      profileImageInput.onchange = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          setMessage(
+            "profileImageMessage",
+            "Uploading profile image…",
+            "success",
+          );
+          const result = await uploadImage(file, "profile");
+          saveSession(result);
+          profileAvatar.innerHTML = `<img src="${escapeHTML(result.url)}" alt="${escapeHTML(user.name)} profile photo">`;
+          setMessage(
+            "profileImageMessage",
+            "Profile image updated.",
+            "success",
+          );
+        } catch (error) {
+          setMessage("profileImageMessage", error.message);
+        } finally {
+          event.target.value = "";
+        }
+      };
 
     const posts = await api("/api/posts/mine");
     const published = posts.filter(
@@ -384,11 +438,33 @@ async function renderStory() {
   }
   function display(post) {
     document.title = `${post.title} | BlogSpace`;
-    container.innerHTML = `<article class="story-article"><img class="story-cover" src="${escapeHTML(getImage(post))}" alt=""><div class="story-copy"><a class="text-link story-back" href="index.html#latest">← All stories</a><span class="card-category story-category">${escapeHTML(post.category.toUpperCase())}</span><h1>${escapeHTML(post.title)}</h1><div class="story-byline">By <strong>${escapeHTML(post.author)}</strong><span aria-hidden="true">·</span><time datetime="${escapeHTML(post.date)}">${formatDate(post.date)}</time></div>${post.excerpt ? `<p class="story-excerpt">${escapeHTML(post.excerpt)}</p>` : ""}<div class="story-content">${escapeHTML(post.content).replace(/\n/g, "<br>")}</div></div></article>`;
+    const currentUser = getUser();
+    const authorImage =
+      post.authorImage ||
+      (currentUser?.id === post.authorId ? currentUser.profileImage : "");
+    const avatar = authorImage
+      ? `<img class="byline-avatar" src="${escapeHTML(authorImage)}" alt="">`
+      : `<span class="byline-avatar byline-initials">${escapeHTML(getInitials(post.author))}</span>`;
+    const engagementMarkup = `<section class="engagement-panel" id="engagementPanel" aria-label="Story discussion"><div class="engagement-heading"><h2>Join the conversation</h2><button class="like-button" id="likeButton" type="button" aria-pressed="false">♡ <span id="likeCount">0</span> likes</button></div><div id="commentsList" class="comments-list"><p class="muted">Loading comments…</p></div><form id="commentForm" class="comment-form"><label for="commentContent">Leave a comment</label><textarea id="commentContent" maxlength="2000" rows="3" placeholder="Share a thoughtful response…" required></textarea><div class="comment-form-footer"><p id="commentMessage" class="form-message" role="status"></p><button class="btn btn-primary" type="submit">Post comment</button></div></form></section>`;
+    const existingEngagement = container.querySelector("#engagementPanel");
+    container.innerHTML = `<article class="story-article"><img class="story-cover" src="${escapeHTML(getImage(post))}" alt=""><div class="story-copy"><a class="text-link story-back" href="index.html#latest">← All stories</a><span class="card-category story-category">${escapeHTML(post.category.toUpperCase())}</span><h1>${escapeHTML(post.title)}</h1><div class="story-byline">${avatar}<span>By <strong>${escapeHTML(post.author)}</strong></span><span aria-hidden="true">·</span><time datetime="${escapeHTML(post.date)}">${formatDate(post.date)}</time></div>${post.excerpt ? `<p class="story-excerpt">${escapeHTML(post.excerpt)}</p>` : ""}<div class="story-content">${escapeHTML(post.content).replace(/\n/g, "<br>")}</div></div></article>`;
+    if (existingEngagement) {
+      container.appendChild(existingEngagement);
+    } else {
+      container.insertAdjacentHTML("beforeend", engagementMarkup);
+      setupEngagement(postId);
+    }
   }
+  let cachedPost = null;
+  try {
+    cachedPost = (JSON.parse(sessionStorage.getItem(POSTS_CACHE_KEY) || "[]"))
+      .find((post) => String(post.id) === postId) || null;
+  } catch { /* Ignore an invalid session cache and load from the API. */ }
+  if (cachedPost) display(cachedPost);
   try {
     display(await api(`/api/posts/${encodeURIComponent(postId)}`));
   } catch (error) {
+    if (cachedPost) return;
     const sample = sampleStories.find((post) => post.id === postId);
     if (sample) {
       display(sample);
@@ -402,6 +478,81 @@ async function renderStory() {
   }
 }
 
+async function setupEngagement(postId) {
+  const likeButton = document.getElementById("likeButton");
+  const likeCount = document.getElementById("likeCount");
+  const commentsList = document.getElementById("commentsList");
+  const commentForm = document.getElementById("commentForm");
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    likeButton.title = "Log in to like this story";
+    commentForm.innerHTML =
+      '<p class="muted">Please <a href="login.html">log in</a> to like and comment.</p>';
+  }
+  try {
+    const [engagement, comments] = await Promise.all([
+      api(`/api/posts/${encodeURIComponent(postId)}/engagement`),
+      api(`/api/posts/${encodeURIComponent(postId)}/comments`),
+    ]);
+    likeCount.textContent = engagement.likes;
+    likeButton.classList.toggle("liked", engagement.liked);
+    likeButton.setAttribute("aria-pressed", String(engagement.liked));
+    commentsList.innerHTML = comments.length
+      ? comments
+          .map(
+            (comment) =>
+              `<article class="comment-item"><div class="comment-avatar">${comment.authorImage ? `<img src="${escapeHTML(comment.authorImage)}" alt="">` : escapeHTML(getInitials(comment.author))}</div><div class="comment-body"><div class="comment-meta"><strong>${escapeHTML(comment.author)}</strong><time>${new Date(comment.createdAt).toLocaleString()}</time></div><p>${escapeHTML(comment.content).replace(/\n/g, "<br>")}</p></div></article>`,
+          )
+          .join("")
+      : '<p class="muted">No comments yet. Start the conversation.</p>';
+  } catch (error) {
+    commentsList.innerHTML = `<p class="form-message error">${escapeHTML(error.message)}</p>`;
+  }
+  likeButton.addEventListener("click", async () => {
+    if (!localStorage.getItem(TOKEN_KEY)) {
+      window.location.href = "login.html";
+      return;
+    }
+    likeButton.disabled = true;
+    try {
+      const result = await api(
+        `/api/posts/${encodeURIComponent(postId)}/likes`,
+        { method: "POST" },
+      );
+      likeCount.textContent = result.likes;
+      likeButton.classList.toggle("liked", result.liked);
+      likeButton.setAttribute("aria-pressed", String(result.liked));
+    } catch (error) {
+      setMessage("commentMessage", error.message);
+    } finally {
+      likeButton.disabled = false;
+    }
+  });
+  commentForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const content = document.getElementById("commentContent").value.trim();
+    try {
+      const comment = await api(
+        `/api/posts/${encodeURIComponent(postId)}/comments`,
+        {
+          method: "POST",
+          body: JSON.stringify({ content }),
+        },
+      );
+      const empty = commentsList.querySelector(".muted");
+      if (empty) empty.remove();
+      commentsList.insertAdjacentHTML(
+        "beforeend",
+        `<article class="comment-item"><div class="comment-avatar">${comment.authorImage ? `<img src="${escapeHTML(comment.authorImage)}" alt="">` : escapeHTML(getInitials(comment.author))}</div><div class="comment-body"><div class="comment-meta"><strong>${escapeHTML(comment.author)}</strong><time>${new Date(comment.createdAt).toLocaleString()}</time></div><p>${escapeHTML(comment.content).replace(/\n/g, "<br>")}</p></div></article>`,
+      );
+      commentForm.reset();
+      setMessage("commentMessage", "Comment posted.", "success");
+    } catch (error) {
+      setMessage("commentMessage", error.message);
+    }
+  });
+}
+
 function setupEditor() {
   const form = document.getElementById("createBlogForm");
   if (!form) return;
@@ -410,8 +561,39 @@ function setupEditor() {
   const title = document.getElementById("blogTitle");
   const category = document.getElementById("blogCategory");
   const excerpt = document.getElementById("blogExcerpt");
+  const imageInput = document.getElementById("blogImageInput");
+  const imagePreview = document.getElementById("blogImagePreview");
   const submitButton = form.querySelector('button[type="submit"]');
+  const draftButton = document.getElementById("saveDraftButton");
   let originalStatus = "published";
+  let postImage = "";
+  let imageUploading = false;
+  imageInput?.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const wasSubmitDisabled = submitButton.disabled;
+    const wasDraftDisabled = draftButton.disabled;
+    imageUploading = true;
+    imageInput.disabled = true;
+    submitButton.disabled = true;
+    draftButton.disabled = true;
+    try {
+      setMessage("createMessage", "Uploading story image…", "success");
+      const uploaded = await uploadImage(file, "post");
+      postImage = uploaded.url;
+      imagePreview.src = postImage;
+      imagePreview.classList.remove("hidden");
+      setMessage("createMessage", "Story image ready.", "success");
+    } catch (error) {
+      imageInput.value = "";
+      setMessage("createMessage", error.message);
+    } finally {
+      imageUploading = false;
+      imageInput.disabled = false;
+      submitButton.disabled = wasSubmitDisabled;
+      draftButton.disabled = wasDraftDisabled;
+    }
+  });
   content.addEventListener("input", () => {
     document.getElementById("wordCount").textContent =
       `${wordCount(content.value)} ${wordCount(content.value) === 1 ? "word" : "words"}`;
@@ -435,6 +617,11 @@ function setupEditor() {
         category.value = post.category;
         excerpt.value = post.excerpt || "";
         content.value = post.content;
+        postImage = post.image || "";
+        if (postImage) {
+          imagePreview.src = postImage;
+          imagePreview.classList.remove("hidden");
+        }
         originalStatus = post.status;
         document.getElementById("wordCount").textContent =
           `${wordCount(content.value)} ${wordCount(content.value) === 1 ? "word" : "words"}`;
@@ -457,6 +644,11 @@ function setupEditor() {
       });
   }
   async function savePost(status) {
+    if (imageUploading)
+      return setMessage(
+        "createMessage",
+        "Please wait for the image upload to finish.",
+      );
     const user = getUser();
     if (!user || !localStorage.getItem(TOKEN_KEY)) {
       setMessage(
@@ -475,7 +667,11 @@ function setupEditor() {
       excerpt: excerpt.value.trim(),
       content: content.value.trim(),
       status,
-      image: imageByCategory[selectedCategory] || imageByCategory.Other,
+      image:
+        postImage ||
+        (postId
+          ? ""
+          : imageByCategory[selectedCategory] || imageByCategory.Other),
     };
     if (!payload.title || !selectedCategory || payload.content.length < 20)
       return setMessage(

@@ -89,6 +89,11 @@
           </div>
         </div>
 
+        <label for="blogImageInput">Story image <span class="label-note">(optional)</span></label>
+        <input id="blogImageInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+        <p class="muted image-help">Choose a JPEG, PNG, WebP, or GIF image up to 5 MB.</p>
+        <img id="blogImagePreview" class="editor-image-preview hidden" alt="Story image preview" />
+
         <label for="blogContent">Your story</label>
         <textarea
           id="blogContent"

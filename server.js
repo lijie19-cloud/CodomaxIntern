@@ -20,7 +20,17 @@ const categories = [
   "Other",
 ];
 const postColumns =
+  "id,title,category,excerpt,content,author,author_email,author_image,author_id,date,status,image";
+const postColumnsWithoutAuthorImage =
   "id,title,category,excerpt,content,author,author_email,author_id,date,status,image";
+let authorImageColumnAvailable = null;
+const imageBucket = "blog-images";
+const allowedImageTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
 const starterPosts = [
   {
     id: "sample-1",
@@ -76,7 +86,7 @@ const starterPosts = [
     date: "2026-10-09",
     status: "published",
     image:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUiIs91RjgsQKsXk_iEUeYLqxUdJHCGAEuUaVTye8dOQ&s=10",
   },
   {
     id: "sample-5",
@@ -129,6 +139,24 @@ async function unwrap(query) {
   return data;
 }
 
+async function queryPosts(buildQuery) {
+  if (authorImageColumnAvailable === false)
+    return unwrap(buildQuery(postColumnsWithoutAuthorImage));
+  try {
+    const rows = await unwrap(buildQuery(postColumns));
+    authorImageColumnAvailable = true;
+    return rows;
+  } catch (error) {
+    if (
+      !["PGRST204", "42703"].includes(error.code) ||
+      !String(error.message).includes("author_image")
+    )
+      throw error;
+    authorImageColumnAvailable = false;
+    return unwrap(buildQuery(postColumnsWithoutAuthorImage));
+  }
+}
+
 function formatPost(row) {
   return {
     id: row.id,
@@ -138,6 +166,7 @@ function formatPost(row) {
     content: row.content,
     author: row.author,
     authorEmail: row.author_email || "",
+    authorImage: row.author_image || "",
     authorId: row.author_id,
     date: row.date,
     status: row.status,
@@ -161,7 +190,7 @@ function auth(req, res, next) {
   }
 }
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "7mb" }));
 app.use(express.static(__dirname));
 
 app.get(
@@ -185,11 +214,9 @@ app.post(
     if (!/^\S+@\S+\.\S+$/.test(email))
       return res.status(400).json({ error: "Enter a valid email address." });
     if (password.length < 6 || password.length > 72)
-      return res
-        .status(400)
-        .json({
-          error: "Your password must contain between 6 and 72 characters.",
-        });
+      return res.status(400).json({
+        error: "Your password must contain between 6 and 72 characters.",
+      });
 
     const { data, error } = await supabase.auth.admin.createUser({
       email,
@@ -213,6 +240,7 @@ app.post(
       id: data.user.id,
       name: data.user.user_metadata?.name || name,
       email: data.user.email,
+      profileImage: data.user.user_metadata?.profile_image || "",
     };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
     res.status(201).json({ token, user });
@@ -231,16 +259,15 @@ app.post(
       password,
     });
     if (error || !data.user)
-      return res
-        .status(401)
-        .json({
-          error:
-            "Invalid email or password. Please check your details or register first.",
-        });
+      return res.status(401).json({
+        error:
+          "Invalid email or password. Please check your details or register first.",
+      });
     const user = {
       id: data.user.id,
       name: data.user.user_metadata?.name || email.split("@")[0],
       email: data.user.email,
+      profileImage: data.user.user_metadata?.profile_image || "",
     };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
     res.json({ token, user });
@@ -253,6 +280,7 @@ app.get("/api/auth/me", auth, (req, res) => {
       id: req.user.id,
       name: req.user.name,
       email: req.user.email,
+      profileImage: req.user.profileImage || "",
     },
   });
 });
@@ -267,10 +295,10 @@ app.get(
       const seeds = starterPosts.map(({ id: _sampleId, ...post }) => post);
       await unwrap(supabase.from("blog_posts").insert(seeds));
     }
-    const rows = await unwrap(
+    const rows = await queryPosts((columns) =>
       supabase
         .from("blog_posts")
-        .select(postColumns)
+        .select(columns)
         .eq("status", "published")
         .order("date", { ascending: false }),
     );
@@ -278,14 +306,238 @@ app.get(
   }),
 );
 
+app.post(
+  "/api/uploads",
+  auth,
+  asyncRoute(async (req, res) => {
+    const { dataUrl, purpose } = req.body || {};
+    if (!/^(profile|post)$/.test(purpose || ""))
+      return res.status(400).json({ error: "Choose a valid image type." });
+    const match =
+      typeof dataUrl === "string"
+        ? dataUrl.match(
+            /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/,
+          )
+        : null;
+    if (!match || !allowedImageTypes.has(match[1]))
+      return res
+        .status(400)
+        .json({ error: "Choose a JPEG, PNG, WebP, or GIF image." });
+    const mimeType = match[1];
+    const buffer = Buffer.from(match[2], "base64");
+    if (!buffer.length || buffer.length > 5 * 1024 * 1024)
+      return res.status(400).json({ error: "Images must be 5 MB or smaller." });
+    const signatures = {
+      "image/jpeg":
+        buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff,
+      "image/png": buffer
+        .subarray(0, 8)
+        .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
+      "image/gif": buffer.subarray(0, 3).toString("ascii") === "GIF",
+      "image/webp":
+        buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+        buffer.subarray(8, 12).toString("ascii") === "WEBP",
+    };
+    if (!signatures[mimeType])
+      return res
+        .status(400)
+        .json({ error: "The selected file is not a valid image." });
+
+    const extension = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    }[mimeType];
+    const path = `${req.user.id}/${purpose}/${require("crypto").randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from(imageBucket)
+      .upload(path, buffer, {
+        contentType: mimeType,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from(imageBucket).getPublicUrl(path);
+    const user = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      profileImage:
+        purpose === "profile" ? data.publicUrl : req.user.profileImage || "",
+    };
+    if (purpose === "profile") {
+      const { error } = await supabase.auth.admin.updateUserById(req.user.id, {
+        user_metadata: { name: req.user.name, profile_image: data.publicUrl },
+      });
+      if (error) throw error;
+      await unwrap(
+        supabase
+          .from("blog_posts")
+          .update({ author_image: data.publicUrl })
+          .eq("author_id", req.user.id),
+      );
+      const token = jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
+      return res.json({ url: data.publicUrl, token, user });
+    }
+    res.json({ url: data.publicUrl });
+  }),
+);
+
+async function ensurePublishedPost(postId) {
+  const post = await unwrap(
+    supabase
+      .from("blog_posts")
+      .select("id")
+      .eq("id", postId)
+      .eq("status", "published")
+      .maybeSingle(),
+  );
+  return Boolean(post);
+}
+
+app.get(
+  "/api/posts/:id/engagement",
+  asyncRoute(async (req, res) => {
+    if (!(await ensurePublishedPost(req.params.id)))
+      return res.status(404).json({ error: "Story not found." });
+    const userId = req.headers.authorization?.startsWith("Bearer ")
+      ? (() => {
+          try {
+            return jwt.verify(req.headers.authorization.slice(7), JWT_SECRET)
+              .id;
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+    const [{ count, error }, userLike] = await Promise.all([
+      supabase
+        .from("blog_likes")
+        .select("post_id", { count: "exact", head: true })
+        .eq("post_id", req.params.id),
+      userId
+        ? supabase
+            .from("blog_likes")
+            .select("post_id")
+            .eq("post_id", req.params.id)
+            .eq("user_id", userId)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+    if (error) throw error;
+    if (userLike.error) throw userLike.error;
+    res.json({
+      likes: count || 0,
+      liked: Boolean(userLike.data),
+    });
+  }),
+);
+
+app.post(
+  "/api/posts/:id/likes",
+  auth,
+  asyncRoute(async (req, res) => {
+    if (!(await ensurePublishedPost(req.params.id)))
+      return res.status(404).json({ error: "Story not found." });
+    const existing = await unwrap(
+      supabase
+        .from("blog_likes")
+        .select("post_id")
+        .eq("post_id", req.params.id)
+        .eq("user_id", req.user.id)
+        .maybeSingle(),
+    );
+    if (existing) {
+      await unwrap(
+        supabase
+          .from("blog_likes")
+          .delete()
+          .eq("post_id", req.params.id)
+          .eq("user_id", req.user.id),
+      );
+    } else {
+      await unwrap(
+        supabase
+          .from("blog_likes")
+          .insert({ post_id: req.params.id, user_id: req.user.id }),
+      );
+    }
+    const { count, error } = await supabase
+      .from("blog_likes")
+      .select("post_id", { count: "exact", head: true })
+      .eq("post_id", req.params.id);
+    if (error) throw error;
+    res.json({ likes: count || 0, liked: !existing });
+  }),
+);
+
+app.get(
+  "/api/posts/:id/comments",
+  asyncRoute(async (req, res) => {
+    if (!(await ensurePublishedPost(req.params.id)))
+      return res.status(404).json({ error: "Story not found." });
+    const comments = await unwrap(
+      supabase
+        .from("blog_comments")
+        .select("id,author,author_image,content,created_at")
+        .eq("post_id", req.params.id)
+        .order("created_at", { ascending: true }),
+    );
+    res.json(
+      comments.map((comment) => ({
+        id: comment.id,
+        author: comment.author,
+        authorImage: comment.author_image || "",
+        content: comment.content,
+        createdAt: comment.created_at,
+      })),
+    );
+  }),
+);
+
+app.post(
+  "/api/posts/:id/comments",
+  auth,
+  asyncRoute(async (req, res) => {
+    if (!(await ensurePublishedPost(req.params.id)))
+      return res.status(404).json({ error: "Story not found." });
+    const content = String(req.body?.content || "").trim();
+    if (!content || content.length > 2000)
+      return res
+        .status(400)
+        .json({ error: "Comments must be between 1 and 2,000 characters." });
+    const row = await unwrap(
+      supabase
+        .from("blog_comments")
+        .insert({
+          post_id: req.params.id,
+          user_id: req.user.id,
+          author: req.user.name,
+          author_image: req.user.profileImage || "",
+          content,
+        })
+        .select("id,author,author_image,content,created_at")
+        .single(),
+    );
+    res.status(201).json({
+      id: row.id,
+      author: row.author,
+      authorImage: row.author_image || "",
+      content: row.content,
+      createdAt: row.created_at,
+    });
+  }),
+);
+
 app.get(
   "/api/posts/mine",
   auth,
   asyncRoute(async (req, res) => {
-    const rows = await unwrap(
+    const rows = await queryPosts((columns) =>
       supabase
         .from("blog_posts")
-        .select(postColumns)
+        .select(columns)
         .eq("author_id", req.user.id)
         .order("date", { ascending: false }),
     );
@@ -296,10 +548,10 @@ app.get(
 app.get(
   "/api/posts/:id",
   asyncRoute(async (req, res) => {
-    const row = await unwrap(
+    const row = await queryPosts((columns) =>
       supabase
         .from("blog_posts")
-        .select(postColumns)
+        .select(columns)
         .eq("id", req.params.id)
         .eq("status", "published")
         .maybeSingle(),
@@ -330,12 +582,10 @@ app.post(
       cleanContent.length < 20 ||
       cleanContent.length > 100000
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Enter a title, choose a category, and write between 20 and 100,000 characters.",
-        });
+      return res.status(400).json({
+        error:
+          "Enter a title, choose a category, and write between 20 and 100,000 characters.",
+      });
     }
     if (!["published", "draft"].includes(status))
       return res
@@ -353,12 +603,19 @@ app.post(
           content: cleanContent,
           author: req.user.name,
           author_email: req.user.email,
+          ...(authorImageColumnAvailable === true
+            ? { author_image: req.user.profileImage || "" }
+            : {}),
           author_id: req.user.id,
           date: new Date().toISOString().slice(0, 10),
           status,
           image: typeof image === "string" ? image.slice(0, 2000) : "",
         })
-        .select(postColumns)
+        .select(
+          authorImageColumnAvailable === true
+            ? postColumns
+            : postColumnsWithoutAuthorImage,
+        )
         .single(),
     );
     res.status(201).json(formatPost(row));
@@ -386,12 +643,10 @@ app.put(
       cleanContent.length < 20 ||
       cleanContent.length > 100000
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Enter a title, choose a category, and write between 20 and 100,000 characters.",
-        });
+      return res.status(400).json({
+        error:
+          "Enter a title, choose a category, and write between 20 and 100,000 characters.",
+      });
     }
     if (!["published", "draft"].includes(status))
       return res
@@ -412,15 +667,17 @@ app.put(
         })
         .eq("id", req.params.id)
         .eq("author_id", req.user.id)
-        .select(postColumns)
+        .select(
+          authorImageColumnAvailable === true
+            ? postColumns
+            : postColumnsWithoutAuthorImage,
+        )
         .maybeSingle(),
     );
     if (!row)
-      return res
-        .status(404)
-        .json({
-          error: "Story not found or you do not have permission to edit it.",
-        });
+      return res.status(404).json({
+        error: "Story not found or you do not have permission to edit it.",
+      });
     res.json(formatPost(row));
   }),
 );
@@ -448,21 +705,27 @@ app.use("/api", (_req, res) =>
 );
 app.use((error, _req, res, _next) => {
   console.error(error);
+  const errorContext = `${error.constraint || ""} ${error.details || ""} ${error.message || ""}`;
+  if (
+    error.code === "23503" &&
+    /blog_(likes|comments)_user_id_fkey/.test(errorContext)
+  ) {
+    return res.status(409).json({
+      error:
+        "This account uses a valid BlogSpace session that is not linked to a Supabase Auth row. Run supabase/fix-social-user-references.sql in the Supabase SQL Editor, then retry.",
+    });
+  }
   if (error.code === "PGRST205" || error.code === "42P01") {
-    return res
-      .status(503)
-      .json({
-        error:
-          "Supabase tables are missing. Run supabase/schema.sql in your project's SQL Editor, then reload.",
-      });
+    return res.status(503).json({
+      error:
+        "Supabase tables are missing. Run supabase/schema.sql in your project's SQL Editor, then reload.",
+    });
   }
   if (error.code === "PGRST204" || error.code === "42703") {
-    return res
-      .status(503)
-      .json({
-        error:
-          "Supabase blog_posts is missing required columns. Run the updated supabase/schema.sql in your project's SQL Editor, then reload.",
-      });
+    return res.status(503).json({
+      error:
+        "Supabase blog_posts is missing required columns. Run the updated supabase/schema.sql in your project's SQL Editor, then reload.",
+    });
   }
   if (
     error.code === "42501" ||
@@ -470,12 +733,10 @@ app.use((error, _req, res, _next) => {
     error.status === 401 ||
     error.status === 403
   ) {
-    return res
-      .status(503)
-      .json({
-        error:
-          "Supabase denied this request. Check SUPABASE_URL, SUPABASE_SECRET_KEY, and the table grants in supabase/schema.sql.",
-      });
+    return res.status(503).json({
+      error:
+        "Supabase denied this request. Check SUPABASE_URL, SUPABASE_SECRET_KEY, and the table grants in supabase/schema.sql.",
+    });
   }
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
