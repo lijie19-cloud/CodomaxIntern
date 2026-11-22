@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
@@ -190,8 +191,8 @@ function auth(req, res, next) {
   }
 }
 
-app.use(express.json({ limit: "7mb" }));
-app.use(express.static(__dirname));
+app.use(express.json({ limit: "4.25mb" }));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get(
   "/api/health",
@@ -325,8 +326,8 @@ app.post(
         .json({ error: "Choose a JPEG, PNG, WebP, or GIF image." });
     const mimeType = match[1];
     const buffer = Buffer.from(match[2], "base64");
-    if (!buffer.length || buffer.length > 5 * 1024 * 1024)
-      return res.status(400).json({ error: "Images must be 5 MB or smaller." });
+    if (!buffer.length || buffer.length > 3 * 1024 * 1024)
+      return res.status(400).json({ error: "Images must be 3 MB or smaller." });
     const signatures = {
       "image/jpeg":
         buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff,
@@ -741,6 +742,10 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
 
-app.listen(PORT, () =>
-  console.log(`BlogSpace is running at http://localhost:${PORT}`),
-);
+if (require.main === module) {
+  app.listen(PORT, () =>
+    console.log(`BlogSpace is running at http://localhost:${PORT}`),
+  );
+}
+
+module.exports = app;

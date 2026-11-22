@@ -180,8 +180,8 @@ async function uploadImage(file, purpose) {
   const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   if (!allowed.includes(file.type))
     throw new Error("Choose a JPEG, PNG, WebP, or GIF image.");
-  if (file.size > 5 * 1024 * 1024)
-    throw new Error("Images must be 5 MB or smaller.");
+  if (file.size > 3 * 1024 * 1024)
+    throw new Error("Images must be 3 MB or smaller.");
   const dataUrl = await fileAsDataUrl(file);
   return api("/api/uploads", {
     method: "POST",

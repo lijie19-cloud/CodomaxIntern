@@ -27,7 +27,7 @@ _Replace this placeholder with your deployment URL when the app is live._
 - Signed, expiring JWT sessions for protected API requests
 - Create, read, update, and delete operations for blog posts
 - Private dashboard scoped to the signed-in writer
-- Profile photos and uploaded story cover images (JPEG, PNG, WebP, or GIF; up to 5 MB)
+- Profile photos and uploaded story cover images (JPEG, PNG, WebP, or GIF; up to 3 MB)
 - Persistent likes and comments on published stories
 - Published story search and category filters
 - Sample stories in the Supabase migration, with a local display fallback if the API is unavailable
@@ -85,12 +85,12 @@ Account registration currently confirms the email from the server so a new accou
 
 | Page | File | Purpose |
 | --- | --- | --- |
-| Home | `index.html` | Browse, search, and filter published stories |
-| Register | `register.html` | Create an account |
-| Login | `login.html` | Sign in |
-| Dashboard | `dashboard.html` | View and manage your own stories and profile |
-| Story editor | `create-blog.html` | Create a story or edit an existing one |
-| Story detail | `story.html` | Read an individual published story |
+| Home | `public/index.html` | Browse, search, and filter published stories |
+| Register | `public/register.html` | Create an account |
+| Login | `public/login.html` | Sign in |
+| Dashboard | `public/dashboard.html` | View and manage your own stories and profile |
+| Story editor | `public/create-blog.html` | Create a story or edit an existing one |
+| Story detail | `public/story.html` | Read an individual published story |
 
 ## API reference
 
@@ -122,18 +122,29 @@ For an existing installation whose likes or comments fail with a foreign-key err
 
 ## Deployment
 
-Deploy BlogSpace as a Node.js web service because Express serves both the frontend and REST API. Configure the environment variables listed in `.env.example`, set the start command to `npm start`, and let the host provide `PORT`. Run `supabase/schema.sql` against the production Supabase project before serving traffic. For an existing database with social-feature foreign key errors, also run `supabase/fix-social-user-references.sql`. Keep the Supabase secret key and JWT secret in the hosting provider's encrypted environment settings.
+### Deploying to Vercel
 
-After deployment, check `/api/health` and confirm registration, login, post creation, editing, deletion, likes, comments, image uploads, and the mobile layout on the deployed URL. Replace the live application placeholder at the top of this README with the final public URL.
+Vercel detects the Express application in `server.js` and runs it as a Node.js Function. Frontend files are in `public/` because Vercel serves static assets from that directory; `express.static()` remains enabled for local development. No custom build command is required for this plain JavaScript project.
+
+1. Import the Git repository into Vercel and keep the project root set to the repository root.
+2. In **Project Settings → Environment Variables**, add `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, and a unique `JWT_SECRET` for Preview and Production. Vercel does not use your local `.env` file. Never add the Supabase secret key or JWT secret to `public/`.
+3. Run `supabase/schema.sql` in the production Supabase SQL Editor. For an existing database with social-feature foreign key errors, also run `supabase/fix-social-user-references.sql`.
+4. Deploy or redeploy. Redeploy after changing environment variables.
+5. Open the deployment URL and check `/api/health`, sign up/sign in, story creation and editing, likes, comments, image uploads, and mobile layout.
+
+Image uploads are limited to 3 MB so the base64 request stays below Vercel's default 4.5 MB Function payload limit. If Vercel reports `FUNCTION_PAYLOAD_TOO_LARGE`, reduce the file size further before uploading.
+
+After deployment, replace the live application placeholder at the top of this README with the final public URL.
 
 ## Project structure
 
 ```text
 blog-app/
-├── app.js                 # Browser interactions and API calls
+├── public/                # Static pages and browser assets served by Vercel/CDN
+│   ├── app.js             # Browser interactions and API calls
+│   ├── *.html             # App pages
+│   └── styles.css         # Responsive styles
 ├── server.js              # Express server, REST API, and auth middleware
-├── styles.css             # Shared styles and responsive breakpoints
-├── *.html                 # Static app pages
 ├── supabase/schema.sql    # Database schema, security grants, and sample data
 ├── .env.example           # Environment variable template
 └── package.json           # Scripts and dependencies

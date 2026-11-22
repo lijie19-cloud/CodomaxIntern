@@ -91,7 +91,7 @@ create index if not exists blog_comments_post_date_idx
 
 -- Images are uploaded by the API using the server-only Supabase key.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('blog-images', 'blog-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+values ('blog-images', 'blog-images', true, 3145728, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 on conflict (id) do update
 set public = excluded.public,
     file_size_limit = excluded.file_size_limit,
