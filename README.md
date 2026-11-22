@@ -1,6 +1,24 @@
 # BlogSpace
 
-BlogSpace is a full stack blogging app with a responsive web interface, an Express REST API, Supabase Auth, and Supabase Postgres. Readers can browse, search, filter, and open stories. Writers can register, sign in, and manage their own published posts and drafts.
+**A place to read, write, and share stories.** BlogSpace is a full stack blogging application with a responsive web interface, an Express REST API, Supabase Auth, and Supabase Postgres. Readers can discover stories, while writers can publish and manage posts, connect with readers, and build a profile.
+
+**Live application:** `https://<your-deployed-app-url>`
+
+_Replace this placeholder with your deployment URL when the app is live._
+
+**Built with:** Node.js · Express · Supabase · HTML · CSS · JavaScript
+
+## Contents
+
+- [Features](#features)
+- [Technology](#technology)
+- [Local development](#local-development)
+- [Configuration and security](#configuration-and-security)
+- [Application pages](#application-pages)
+- [API reference](#api-reference)
+- [Deployment](#deployment)
+- [Project structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
 
 ## Features
 
@@ -15,13 +33,20 @@ BlogSpace is a full stack blogging app with a responsive web interface, an Expre
 - Sample stories in the Supabase migration, with a local display fallback if the API is unavailable
 - Server-side validation and ownership checks for post changes
 
+## Technology
+
+- **Frontend:** HTML, CSS, vanilla JavaScript
+- **Backend:** Node.js and Express
+- **Database and identity:** Supabase Postgres and Supabase Auth
+- **Image storage:** Supabase Storage
+
 ## Requirements
 
 - Node.js 18 or newer
 - npm
 - A Supabase project
 
-## Local setup
+## Local development
 
 1. Create a Supabase project.
 2. Open the Supabase SQL Editor and run [`supabase/schema.sql`](supabase/schema.sql). This creates or upgrades the posts table, creates likes and comments tables, configures the public image bucket, applies the required grants and row-level security policies, and inserts sample stories. Existing posts are preserved. Re-run this script after upgrading an older database so all required columns and tables exist.
@@ -56,7 +81,7 @@ Supabase Auth stores and verifies passwords. The server uses its secret key for 
 
 Account registration currently confirms the email from the server so a new account can sign in immediately. Configure email verification before changing that behavior for a public production launch.
 
-## Pages
+## Application pages
 
 | Page | File | Purpose |
 | --- | --- | --- |
@@ -67,7 +92,7 @@ Account registration currently confirms the email from the server so a new accou
 | Story editor | `create-blog.html` | Create a story or edit an existing one |
 | Story detail | `story.html` | Read an individual published story |
 
-## REST API
+## API reference
 
 Protected routes require `Authorization: Bearer <token>`. Requests and responses use JSON unless the response is `204 No Content`.
 
@@ -97,9 +122,9 @@ For an existing installation whose likes or comments fail with a foreign-key err
 
 ## Deployment
 
-Deploy the project to a Node.js host that supports a long-running Express server. Configure the environment variables from the Configuration section, set the start command to `npm start`, and let the host provide `PORT`. Run `supabase/schema.sql` against the production Supabase project before serving traffic. Keep the Supabase secret key and JWT secret in the hosting provider's encrypted environment settings.
+Deploy BlogSpace as a Node.js web service because Express serves both the frontend and REST API. Configure the environment variables listed in `.env.example`, set the start command to `npm start`, and let the host provide `PORT`. Run `supabase/schema.sql` against the production Supabase project before serving traffic. For an existing database with social-feature foreign key errors, also run `supabase/fix-social-user-references.sql`. Keep the Supabase secret key and JWT secret in the hosting provider's encrypted environment settings.
 
-After deployment, check `/api/health` and confirm registration, login, post creation, editing, deletion, and the mobile layout on the deployed URL. This repository contains deployment instructions; it is not deployed to a hosting provider by this project setup.
+After deployment, check `/api/health` and confirm registration, login, post creation, editing, deletion, likes, comments, image uploads, and the mobile layout on the deployed URL. Replace the live application placeholder at the top of this README with the final public URL.
 
 ## Project structure
 
